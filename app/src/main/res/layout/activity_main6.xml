@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/back2"
+    android:gravity="top"
+    android:orientation="vertical"
+    tools:context=".MainActivity5">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="74dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:text="Calories Burnt"
+        android:textColor="#0A0101"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/maxCal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:paddingLeft="20dp"
+        android:text="Max Calories:"
+        android:textColor="#0E0000"
+        android:textSize="20dp" />
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/barchart"
+        android:layout_width="match_parent"
+        android:layout_height="512dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="10dp" />
+
+</LinearLayout>
