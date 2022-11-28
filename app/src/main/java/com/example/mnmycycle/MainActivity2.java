@@ -39,6 +39,7 @@ import android.widget.Toast;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
+import com.google.android.gms.maps.model.LatLng;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -46,12 +47,22 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
 
 import io.alterac.blurkit.BlurLayout;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity2 extends AppCompatActivity implements LocationListener {
     Button button,musicB,start,reset,addinfo;
@@ -96,9 +107,11 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
         calories=findViewById(R.id.calories);
         cardCal=(CardView)findViewById(R.id.cardView1);
         cardDist=(CardView)findViewById(R.id.cardDist);
-
         cursor= db.getdata();
         cursor.moveToLast();
+
+        //adding welcoming first user animation
+
         if(cursor.getCount()>0)
             addinfo.setText("hello " + cursor.getString(0));
         else{
@@ -128,6 +141,8 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
                     }
             );
         }
+
+        //stopwatch
 
         chronometer.setBase(SystemClock.elapsedRealtime());
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
@@ -246,6 +261,7 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
         }).check();
     }
 
+    //user info adding dialog
     public void openDialog(){
         final Dialog dialog=new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -437,6 +453,8 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
         if (location != null) {
             CLocation myLocation = new CLocation(location, true);
             this.updateSpeed(myLocation,distanceCal);
+            LatLng latLng=new LatLng(location.getLatitude(),location.getLongitude());
+            forecast(latLng);
         }
     }
 
@@ -455,6 +473,45 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
 
     }
 
+    void forecast(LatLng latLng){
+        String url="https://aerisweather1.p.rapidapi.com/forecasts/"+latLng.latitude + "," + latLng.longitude;
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("X-RapidAPI-Key", "b936137b11msh7ba9f065f8e5a8ep1693ebjsn272f402ffcfb")
+                .addHeader("X-RapidAPI-Host", "aerisweather1.p.rapidapi.com")
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Toast.makeText(MainActivity2.this, "Hauni bhai :(", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String res = response.body().string();
+                    MainActivity2.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            JSONObject jsonObject= null;
+                            try {
+                                jsonObject = new JSONObject(res);
+                                JSONArray arr= jsonObject.getJSONArray("response");
+                                JSONArray arr1= arr.getJSONObject(0).getJSONArray("periods");
+                                String Val=arr1.getJSONObject(0).getString("weather");
+                                TextView textView=(TextView) findViewById(R.id.ans);
+                                textView.setText(Val);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void doStuff() {
         LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
